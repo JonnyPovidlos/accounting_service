@@ -32,9 +32,9 @@ def upgrade():
     op.create_table('operation',
                     sa.Column('id', sa.Integer(), nullable=False),
                     sa.Column('type', sa.Enum('BUY', 'SALE', name='type_operation'), nullable=False),
-                    sa.Column('date', sa.DateTime(), nullable=False),
+                    sa.Column('date', sa.Date(), nullable=False),
                     sa.Column('shop_id', sa.Integer(), nullable=False),
-                    sa.Column('category_id', sa.Integer(), nullable=False),
+                    sa.Column('category_id', sa.Integer(), nullable=True),
                     sa.Column('price', sa.Numeric(precision=18, scale=2), nullable=False),
                     sa.Column('amount', sa.Numeric(precision=18, scale=2), nullable=False),
                     sa.PrimaryKeyConstraint('id')

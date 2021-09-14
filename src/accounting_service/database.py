@@ -1,10 +1,6 @@
-import enum
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy import (Column,
                         Integer,
-                        Enum,
-                        DateTime,
-                        Numeric,
                         String,
                         create_engine,
                         event,
@@ -26,11 +22,6 @@ Session = sessionmaker(bind=__engine,
 Base = declarative_base()
 
 
-class TypeOperation(str, enum.Enum):
-    BUY = 'byy'
-    SALE = 'sale'
-
-
 class Account(Base):
     __tablename__ = 'account'
 
@@ -38,15 +29,3 @@ class Account(Base):
     email = Column(String, nullable=False, unique=True)
     username = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
-
-
-class Operation(Base):
-    __tablename__ = 'operation'
-
-    id = Column(Integer, primary_key=True)
-    type = Column(Enum(TypeOperation), nullable=False)
-    date = Column(DateTime, nullable=False)
-    shop_id = Column(Integer, nullable=False)
-    category_id = Column(Integer, nullable=False)
-    price = Column(Numeric(18, 2), nullable=False)
-    amount = Column(Numeric(18, 2), nullable=False)
