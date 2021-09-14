@@ -29,3 +29,7 @@ class Account(Base):
     email = Column(String, nullable=False, unique=True)
     username = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
+
+from accounting_service.category.models import Category # noqa
+from accounting_service.operation.models import Operation # noqa
+from accounting_service.shop.models import Shop # noqa

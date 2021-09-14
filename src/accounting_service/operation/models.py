@@ -2,7 +2,7 @@ import datetime
 import enum
 from typing import Optional
 
-from sqlalchemy import Column, Integer, Enum, Date, Numeric
+from sqlalchemy import Column, Integer, Enum, Date, Numeric, ForeignKey
 
 from accounting_service.database import Base
 
@@ -18,8 +18,8 @@ class Operation(Base):
     id = Column(Integer, primary_key=True)
     type = Column(Enum(TypeOperation), nullable=False)
     date = Column(Date, nullable=False)
-    shop_id = Column(Integer, nullable=False)
-    category_id = Column(Integer)
+    shop_id = Column(ForeignKey('shop.id', ondelete='CASCADE', name='shop_key'), nullable=False)
+    category_id = Column(ForeignKey('category.id', ondelete='CASCADE', name='category_key'))
     price = Column(Numeric(18, 2), nullable=False)
     amount = Column(Numeric(18, 2), nullable=False)
 
