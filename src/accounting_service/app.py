@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 
-from . import shop
+from . import shop, category
 
 
 app = FastAPI()
 shop.initialize_app(app)
+category.initialize_app(app)
 
 
 @app.get('/')

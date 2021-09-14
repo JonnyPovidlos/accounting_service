@@ -3,21 +3,21 @@ from sqlalchemy.exc import NoResultFound
 from starlette import status
 
 from accounting_service.database import Session
-from accounting_service.shop.models import Shop
+from accounting_service.category.models import Category
 
-router = APIRouter(prefix='/shops', tags=['shop'])
+router = APIRouter(prefix='/categories', tags=['category'])
 
 
 @router.post('',
              status_code=status.HTTP_201_CREATED)
 def create_shop(name: str):
     with Session() as session:
-        shop = Shop(name=name)
-        session.add(shop)
+        category = Category(name=name)
+        session.add(category)
         session.commit()
         return {
-            'id': shop.id,
-            'name': shop.name
+            'id': category.id,
+            'name': category.name
         }
 
 
@@ -27,7 +27,7 @@ def update_shop(shop_id: int,
                 name: str):
     with Session() as session:
         try:
-            shop = session.query(Shop).filter(Shop.id == shop_id).one()
+            shop = session.query(Category).filter(Category.id == shop_id).one()
         except NoResultFound as e:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         else:
@@ -45,7 +45,7 @@ def update_shop(shop_id: int,
 def delete_shop(shop_id: int):
     with Session() as session:
         try:
-            shop = session.query(Shop).filter(Shop.id == shop_id).one()
+            shop = session.query(Category).filter(Category.id == shop_id).one()
         except NoResultFound as e:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         else:
