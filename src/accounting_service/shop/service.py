@@ -1,6 +1,6 @@
 from fastapi import Depends
 
-from accounting_service.database import get_session, Session
+from accounting_service.database import get_session, Session, update_attrs
 from accounting_service.shop.models import Shop as ShopORM
 from accounting_service.shop.schemas import BaseShop
 
@@ -23,8 +23,7 @@ class ShopService:
 
     def update_shop(self, shop_id: int, shop_update: BaseShop) -> ShopORM:
         shop = self._get(shop_id)
-        for attr, val in shop_update.dict(exclude_unset=True).items():
-            setattr(shop, attr, val)
+        update_attrs(shop, shop_update)
         self.session.commit()
         return shop
 

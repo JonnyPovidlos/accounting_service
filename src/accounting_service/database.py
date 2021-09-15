@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy import (Column,
                         Integer,
@@ -25,6 +26,12 @@ Base = declarative_base()
 def get_session() -> Session:
     with Session() as session:
         yield session
+
+
+def update_attrs(updated: Base, update: BaseModel):
+    for key, val in update.dict(exclude_unset=True).items():
+        setattr(updated, key, val)
+    # return updated
 
 
 class Account(Base):
