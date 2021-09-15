@@ -11,17 +11,17 @@ class CategoryService:
     def __init__(self, session: Session = Depends(get_session)):
         self.session = session
 
-    def create_category(self, category_create: BaseCategory):
+    def create_category(self, category_create: BaseCategory) -> CategoryORM:
         category = CategoryORM(**category_create.dict(exclude_unset=True))
         self.session.add(category)
         self.session.commit()
         return category
 
-    def _get(self, category_id: int):
+    def _get(self, category_id: int) -> CategoryORM:
         category = self.session.query(CategoryORM).where(CategoryORM.id == category_id).one()
         return category
 
-    def update_category(self, category_id: int, category_update: BaseCategory):
+    def update_category(self, category_id: int, category_update: BaseCategory) -> CategoryORM:
         category = self._get(category_id)
         update_attrs(category, category_update)
         self.session.commit()
