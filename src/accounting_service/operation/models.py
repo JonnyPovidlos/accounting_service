@@ -3,11 +3,12 @@ import enum
 from typing import Optional
 
 from sqlalchemy import Column, Integer, Enum, Date, Numeric, ForeignKey, String
+from sqlalchemy.orm import relationship
 
 from accounting_service.database import Base
 
 
-class TypeOperation(str, enum.Enum):
+class OperationType(str, enum.Enum):
     BUY = 'buy'
     SALE = 'sale'
 
@@ -16,7 +17,7 @@ class Operation(Base):
     __tablename__ = 'operation'
 
     id = Column(Integer, primary_key=True)
-    type = Column(Enum(TypeOperation), nullable=False)
+    type = Column(Enum(OperationType), nullable=False)
     date = Column(Date, nullable=False)
     shop_id = Column(ForeignKey('shop.id', ondelete='CASCADE', name='shop_key'), nullable=False)
     category_id = Column(ForeignKey('category.id', ondelete='CASCADE', name='category_key'))
@@ -24,8 +25,11 @@ class Operation(Base):
     price = Column(Numeric(18, 2), nullable=False)
     amount = Column(Numeric(18, 2), nullable=False)
 
+    shop = relationship('Shop')
+    category = relationship('Category')
+
     def __init__(self,
-                 type: TypeOperation,
+                 type: OperationType,
                  date: datetime,
                  shop_id: int,
                  name: str,

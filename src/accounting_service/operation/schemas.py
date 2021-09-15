@@ -3,11 +3,11 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from accounting_service.operation.models import TypeOperation
+from accounting_service.operation.models import OperationType
 
 
 class BaseOperation(BaseModel):
-    type: TypeOperation
+    type: OperationType
     date: datetime.date
     shop_id: int
     category_id: Optional[int] = None

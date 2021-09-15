@@ -33,3 +33,13 @@ def get_operations(
         service: OperationService = Depends()):
     operations = service.get_operations(date_from, date_to, shops, categories)
     return operations
+
+
+@router.get('/report')
+def get_report(date_from: Optional[datetime.date] = None,
+               date_to: Optional[datetime.date] = None,
+               shops: Optional[list[int]] = Query(None),
+               categories: Optional[list[int]] = Query(None),
+               service: OperationService = Depends()):
+    service.get_report(date_from, date_to, shops, categories)
+    return {}
