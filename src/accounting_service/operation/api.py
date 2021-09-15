@@ -16,6 +16,7 @@ def create_operation(
         type: TypeOperation,
         date: str,
         shop_id: int,
+        name: str,
         price: float,
         amount: float,
         category_id: Optional[int] = None
@@ -25,6 +26,7 @@ def create_operation(
         operation = Operation(type=type.name,
                               date=date,
                               shop_id=shop_id,
+                              name=name,
                               price=price,
                               amount=amount,
                               category_id=category_id)
@@ -36,6 +38,7 @@ def create_operation(
             'date': operation.date,
             'shop_id': operation.shop_id,
             'category_id': operation.category_id,
+            'name': operation.name,
             'price': operation.price,
             'amount': operation.amount
         }
