@@ -1,35 +1,21 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
-from sqlalchemy.exc import NoResultFound
-from starlette import status
+from fastapi import APIRouter
 
 from accounting_service.database import Session
-from accounting_service.operation.models import Operation, TypeOperation
+from accounting_service.operation.models import Operation as OperationORM
+from accounting_service.operation.schemas import BaseOperation, Operation
 
 router = APIRouter(prefix='/operations', tags=['operation'])
 
 
-@router.post('')
-def create_operation(
-        type: TypeOperation,
-        date: str,
-        shop_id: int,
-        name: str,
-        price: float,
-        amount: float,
-        category_id: Optional[int] = None
-):
+@router.post('',
+             response_model=Operation)
+def create_operation(operation_create: BaseOperation):
     with Session() as session:
-        date = datetime.datetime.fromisoformat(date).date()
-        operation = Operation(type=type.name,
-                              date=date,
-                              shop_id=shop_id,
-                              name=name,
-                              price=price,
-                              amount=amount,
-                              category_id=category_id)
+        # date = datetime.datetime.fromisoformat(date).date()
+        operation = OperationORM(**operation_create.dict(exclude_unset=True))
         session.add(operation)
         session.commit()
         return {

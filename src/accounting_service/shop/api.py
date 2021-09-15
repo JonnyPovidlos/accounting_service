@@ -1,18 +1,20 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.exc import NoResultFound
 from starlette import status
 
 from accounting_service.database import Session
-from accounting_service.shop.models import Shop
+from accounting_service.shop.models import Shop as ShopORM
+from accounting_service.shop.schemas import Shop, BaseShop
 
 router = APIRouter(prefix='/shops', tags=['shop'])
 
 
 @router.post('',
-             status_code=status.HTTP_201_CREATED)
-def create_shop(name: str):
+             status_code=status.HTTP_201_CREATED,
+             response_model=Shop)
+def create_shop(shop_create: BaseShop):
     with Session() as session:
-        shop = Shop(name=name)
+        shop = ShopORM(**shop_create.dict(exclude_unset=True))
         session.add(shop)
         session.commit()
         return {
@@ -22,22 +24,20 @@ def create_shop(name: str):
 
 
 @router.patch('/{shop_id}',
-              status_code=status.HTTP_202_ACCEPTED)
+              status_code=status.HTTP_202_ACCEPTED,
+              response_model=Shop)
 def update_shop(shop_id: int,
-                name: str):
+                shop_update: BaseShop):
     with Session() as session:
         try:
-            shop = session.query(Shop).filter(Shop.id == shop_id).one()
+            shop = session.query(ShopORM).filter(ShopORM.id == shop_id).one()
         except NoResultFound as e:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         else:
-            shop.name = name
-            session.add(shop)
+            for attr, val in shop_update.dict(exclude_unset=True).items():
+                setattr(shop, attr, val)
             session.commit()
-            return {
-                'id': shop.id,
-                'name': shop.name
-            }
+            return shop
 
 
 @router.delete('/{shop_id}',
@@ -45,7 +45,7 @@ def update_shop(shop_id: int,
 def delete_shop(shop_id: int):
     with Session() as session:
         try:
-            shop = session.query(Shop).filter(Shop.id == shop_id).one()
+            shop = session.query(ShopORM).filter(ShopORM.id == shop_id).one()
         except NoResultFound as e:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         else:
