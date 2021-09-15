@@ -1,10 +1,12 @@
 import datetime
 
 from fastapi import Depends
+from sqlalchemy.exc import IntegrityError
 
 from accounting_service.database import get_session, Session
 from accounting_service.operation.models import Operation as OperationORM
 from accounting_service.operation.schemas import BaseOperation
+from exceptions import ForeignKeyConstraintFailed
 
 
 class OperationService:
@@ -16,8 +18,11 @@ class OperationService:
     def create_operation(self, operation_create: BaseOperation) -> OperationORM:
         operation = OperationORM(**operation_create.dict(exclude_unset=True))
         self.session.add(operation)
-        self.session.commit()
-        return operation
+        try:
+            self.session.commit()
+            return operation
+        except IntegrityError:
+            raise ForeignKeyConstraintFailed
 
     def _get_operations(self,
                         date_from: datetime.date = None,
