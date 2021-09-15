@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
 from accounting_service.category.schemas import BaseCategory, Category
 from accounting_service.category.service import CategoryService
+from exceptions import NoResultFoundCustom
 
 router = APIRouter(prefix='/categories', tags=['category'])
 
@@ -22,13 +23,19 @@ def create_category(category_create: BaseCategory,
 def update_category(category_id: int,
                     category_update: BaseCategory,
                     service: CategoryService = Depends()):
-    category = service.update_category(category_id, category_update)
-    return category
+    try:
+        category = service.update_category(category_id, category_update)
+        return category
+    except NoResultFoundCustom:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
 
 
 @router.delete('/{category_id}',
                status_code=status.HTTP_204_NO_CONTENT)
 def delete_category(category_id: int,
                     service: CategoryService = Depends()):
-    service.delete_category(category_id)
-    return {}
+    try:
+        service.delete_category(category_id)
+        return {}
+    except NoResultFoundCustom:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)

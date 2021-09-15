@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
 from accounting_service.shop.schemas import Shop, BaseShop
 from accounting_service.shop.service import ShopService
+from exceptions import NoResultFoundCustom
 
 router = APIRouter(prefix='/shops', tags=['shop'])
 
@@ -22,13 +23,19 @@ def create_shop(shop_create: BaseShop,
 def update_shop(shop_id: int,
                 shop_update: BaseShop,
                 service: ShopService = Depends()):
-    shop = service.update_shop(shop_id, shop_update)
-    return shop
+    try:
+        shop = service.update_shop(shop_id, shop_update)
+        return shop
+    except NoResultFoundCustom:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
 
 
 @router.delete('/{shop_id}',
                status_code=status.HTTP_204_NO_CONTENT)
 def delete_shop(shop_id: int,
                 service: ShopService = Depends()):
-    service.delete_shop(shop_id)
-    return {}
+    try:
+        service.delete_shop(shop_id)
+        return {}
+    except NoResultFoundCustom:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)

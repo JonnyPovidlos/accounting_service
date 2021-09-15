@@ -1,8 +1,10 @@
 from fastapi import Depends
+from sqlalchemy.exc import NoResultFound
 
 from accounting_service.database import get_session, Session, update_attrs
 from accounting_service.shop.models import Shop as ShopORM
 from accounting_service.shop.schemas import BaseShop
+from exceptions import NoResultFoundCustom
 
 
 class ShopService:
@@ -18,8 +20,11 @@ class ShopService:
         return shop
 
     def _get(self, shop_id: int) -> ShopORM:
-        shop = self.session.query(ShopORM).filter(ShopORM.id == shop_id).one()
-        return shop
+        try:
+            shop = self.session.query(ShopORM).filter(ShopORM.id == shop_id).one()
+            return shop
+        except NoResultFound:
+            raise NoResultFoundCustom
 
     def update_shop(self, shop_id: int, shop_update: BaseShop) -> ShopORM:
         shop = self._get(shop_id)

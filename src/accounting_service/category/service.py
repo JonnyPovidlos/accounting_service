@@ -1,8 +1,10 @@
 from fastapi import Depends
+from sqlalchemy.exc import NoResultFound
 
 from accounting_service.database import get_session, Session, update_attrs
 from accounting_service.category.models import Category as CategoryORM
 from accounting_service.category.schemas import BaseCategory
+from exceptions import NoResultFoundCustom
 
 
 class CategoryService:
@@ -18,8 +20,11 @@ class CategoryService:
         return category
 
     def _get(self, category_id: int) -> CategoryORM:
-        category = self.session.query(CategoryORM).where(CategoryORM.id == category_id).one()
-        return category
+        try:
+            category = self.session.query(CategoryORM).where(CategoryORM.id == category_id).one()
+            return category
+        except NoResultFound:
+            raise NoResultFoundCustom
 
     def update_category(self, category_id: int, category_update: BaseCategory) -> CategoryORM:
         category = self._get(category_id)

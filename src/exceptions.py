@@ -1,0 +1,2 @@
+class NoResultFoundCustom(Exception):
+    pass
