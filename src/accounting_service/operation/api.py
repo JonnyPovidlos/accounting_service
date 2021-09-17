@@ -41,5 +41,9 @@ def get_report(date_from: Optional[datetime.date] = None,
                shops: Optional[list[int]] = Query(None),
                categories: Optional[list[int]] = Query(None),
                service: OperationService = Depends()):
-    service.get_report(date_from, date_to, shops, categories)
-    return {}
+    report = service.get_report(date_from, date_to, shops, categories)
+    return {
+        'time_points': report['time_points'],
+        'buy': report['buy'].as_dict(),
+        'sale': report['sale'].as_dict()
+    }
