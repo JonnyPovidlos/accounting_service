@@ -4,3 +4,7 @@ class NoResultFoundCustom(Exception):
 
 class ForeignKeyConstraintFailed(Exception):
     pass
+
+
+class IdentityError(Exception):
+    pass

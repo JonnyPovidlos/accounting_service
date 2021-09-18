@@ -1,9 +1,6 @@
 from pydantic import BaseModel
 from sqlalchemy.orm import declarative_base, sessionmaker
-from sqlalchemy import (Column,
-                        Integer,
-                        String,
-                        create_engine,
+from sqlalchemy import (create_engine,
                         event,
                         engine)
 
@@ -31,17 +28,8 @@ def get_session() -> Session:
 def update_attrs(updated: Base, update: BaseModel):
     for key, val in update.dict(exclude_unset=True).items():
         setattr(updated, key, val)
-    # return updated
-
-
-class Account(Base):
-    __tablename__ = 'account'
-
-    id = Column(Integer, primary_key=True)
-    email = Column(String, nullable=False, unique=True)
-    username = Column(String, nullable=False, unique=True)
-    password = Column(String, nullable=False)
 
 from accounting_service.category.models import Category # noqa
 from accounting_service.operation.models import Operation # noqa
 from accounting_service.shop.models import Shop # noqa
+from accounting_service.account.models import Account # noqa
