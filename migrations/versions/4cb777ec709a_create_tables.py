@@ -1,15 +1,15 @@
-"""Create tables 'account', 'shop', 'category', 'operation'
+"""Create tables
 
-Revision ID: 176a411a8630
+Revision ID: 4cb777ec709a
 Revises: 
-Create Date: 2021-09-14 16:05:02.817849
+Create Date: 2021-09-19 19:28:47.526310
 
 """
 from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '176a411a8630'
+revision = '4cb777ec709a'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -29,21 +29,28 @@ def upgrade():
     op.create_table('category',
                     sa.Column('id', sa.Integer(), nullable=False),
                     sa.Column('name', sa.String(), nullable=False),
+                    sa.Column('account_id', sa.Integer(), nullable=False),
+                    sa.ForeignKeyConstraint(['account_id'], ['account.id'], name='account_key'),
                     sa.PrimaryKeyConstraint('id')
                     )
     op.create_table('shop',
                     sa.Column('id', sa.Integer(), nullable=False),
                     sa.Column('name', sa.String(), nullable=False),
+                    sa.Column('account_id', sa.Integer(), nullable=False),
+                    sa.ForeignKeyConstraint(['account_id'], ['account.id'], name='account_key'),
                     sa.PrimaryKeyConstraint('id')
                     )
     op.create_table('operation',
                     sa.Column('id', sa.Integer(), nullable=False),
-                    sa.Column('type', sa.Enum('BUY', 'SALE', name='typeoperation'), nullable=False),
+                    sa.Column('type', sa.Enum('BUY', 'SALE', name='operationtype'), nullable=False),
                     sa.Column('date', sa.Date(), nullable=False),
                     sa.Column('shop_id', sa.Integer(), nullable=False),
                     sa.Column('category_id', sa.Integer(), nullable=True),
+                    sa.Column('name', sa.String(), nullable=False),
                     sa.Column('price', sa.Numeric(precision=18, scale=2), nullable=False),
                     sa.Column('amount', sa.Numeric(precision=18, scale=2), nullable=False),
+                    sa.Column('account_id', sa.Integer(), nullable=False),
+                    sa.ForeignKeyConstraint(['account_id'], ['account.id'], name='account_key'),
                     sa.ForeignKeyConstraint(['category_id'], ['category.id'], name='category_key', ondelete='CASCADE'),
                     sa.ForeignKeyConstraint(['shop_id'], ['shop.id'], name='shop_key', ondelete='CASCADE'),
                     sa.PrimaryKeyConstraint('id')

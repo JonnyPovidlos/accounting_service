@@ -24,6 +24,7 @@ class Operation(Base):
     name = Column(String, nullable=False)
     price = Column(Numeric(18, 2), nullable=False)
     amount = Column(Numeric(18, 2), nullable=False)
+    account_id = Column(ForeignKey('account.id', name='account_key'), nullable=False)
 
     shop = relationship('Shop')
     category = relationship('Category')

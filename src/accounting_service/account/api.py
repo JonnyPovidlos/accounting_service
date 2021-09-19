@@ -10,7 +10,7 @@ from exceptions import IdentityError
 router = APIRouter(prefix='/accounts', tags=['account'])
 
 
-@router.post('',
+@router.post('/signup',
              response_model=Account,
              status_code=status.HTTP_201_CREATED)
 def create_account(
