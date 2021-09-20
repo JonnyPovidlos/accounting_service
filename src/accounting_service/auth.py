@@ -5,6 +5,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import BaseModel
 
+from config import Config
+
 
 class Token(BaseModel):
     access_token: str
@@ -28,7 +30,7 @@ def create_token(account: 'Account') -> str:
                 'email': account.email
             }
         },
-        'secret',
+        Config.SECRET_KEY,
         'HS256'
     )
 
@@ -41,7 +43,7 @@ def get_current_account(
         status_code=status.HTTP_401_UNAUTHORIZED,
         headers={'WWW-Authenticate': 'Bearer'}
     )
-    token_data = jwt.decode(token, 'secret', algorithms=['HS256'])
+    token_data = jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
     if not 'account' in token_data:
         raise credential_exception
     return Account(**token_data['account'])

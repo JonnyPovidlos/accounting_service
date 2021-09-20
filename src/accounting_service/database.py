@@ -4,6 +4,8 @@ from sqlalchemy import (create_engine,
                         event,
                         engine)
 
+from config import Config
+
 
 @event.listens_for(engine.Engine, 'connect')
 def enable_foreign_keys(dbapi_connection, connection_record):
@@ -12,7 +14,7 @@ def enable_foreign_keys(dbapi_connection, connection_record):
     cursor.close()
 
 
-__engine = create_engine(url='sqlite:///test.sqlite',
+__engine = create_engine(url=Config.DATABASE_URL,
                          future=True,
                          connect_args={'check_same_thread': False})
 Session = sessionmaker(bind=__engine,

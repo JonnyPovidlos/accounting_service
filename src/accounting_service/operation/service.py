@@ -9,6 +9,7 @@ from accounting_service.category.models import Category
 from accounting_service.database import get_session, Session
 from accounting_service.operation.models import Operation as OperationORM
 from accounting_service.operation.schemas import BaseOperation
+from accounting_service.report_utils import ReportRecord, make_date_range
 from accounting_service.shop.models import Shop
 from exceptions import ForeignKeyConstraintFailed
 
@@ -64,7 +65,7 @@ class OperationService:
                        categories: list[int] = None) -> list[OperationORM]:
         return self._get_operations(account_id, date_from, date_to, shops, categories)
 
-    def _make_report_query(self, *args, **kwargs) -> Query:
+    def _make_report_query(self, account_id, *args, **kwargs) -> Query:
         query = select(
             func.date(OperationORM.date, 'start of month'),
             OperationORM.type,
@@ -76,7 +77,7 @@ class OperationService:
             Shop, OperationORM.shop_id == Shop.id
         ).outerjoin(
             Category, OperationORM.category_id == Category.id
-        )
+        ).where(OperationORM.account_id == account_id)
         query = self._make_limitations(query, *args, **kwargs)
         query = query.group_by(
             func.date(OperationORM.date, 'start of month'),
@@ -88,11 +89,13 @@ class OperationService:
         return query
 
     def get_report(self,
+                   account_id,
                    date_from: datetime.date = None,
                    date_to: datetime.date = None,
                    shops: list[int] = None,
                    categories: list[int] = None):
-        query = self._make_report_query(date_from=date_from,
+        query = self._make_report_query(account_id=account_id,
+                                        date_from=date_from,
                                         date_to=date_to,
                                         shops=shops,
                                         categories=categories)
