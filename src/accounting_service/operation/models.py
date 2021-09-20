@@ -9,8 +9,8 @@ from accounting_service.database import Base
 
 
 class OperationType(str, enum.Enum):
-    BUY = 'buy'
-    SALE = 'sale'
+    BUY = 'Покупки'
+    SALE = 'Продажи'
 
 
 class Operation(Base):

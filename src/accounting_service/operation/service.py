@@ -64,26 +64,20 @@ class OperationService:
                        categories: list[int] = None) -> list[OperationORM]:
         return self._get_operations(account_id, date_from, date_to, shops, categories)
 
-    def get_report(self,
-                   account_id: int,
-                   date_from: datetime.date = None,
-                   date_to: datetime.date = None,
-                   shops: list[int] = None,
-                   categories: list[int] = None):
+    def _make_report_query(self, *args, **kwargs) -> Query:
         query = select(
             func.date(OperationORM.date, 'start of month'),
             OperationORM.type,
-            Shop.name,
-            Category.name,
+            Shop.name.label('shop'),
+            Category.name.label('category'),
             OperationORM.name,
             func.sum(OperationORM.amount)
         ).join(
             Shop, OperationORM.shop_id == Shop.id
         ).outerjoin(
             Category, OperationORM.category_id == Category.id
-        ).where(OperationORM.account_id == account_id)
-
-        query = self._make_limitations(query, date_from, date_to, shops, categories)
+        )
+        query = self._make_limitations(query, *args, **kwargs)
         query = query.group_by(
             func.date(OperationORM.date, 'start of month'),
             OperationORM.type,
@@ -91,6 +85,39 @@ class OperationService:
             Category.name,
             OperationORM.name
         )
-        rows = self.session.execute(query).all()
-        for row in rows:
-            print(dict(row))
+        return query
+
+    def get_report(self,
+                   date_from: datetime.date = None,
+                   date_to: datetime.date = None,
+                   shops: list[int] = None,
+                   categories: list[int] = None):
+        query = self._make_report_query(date_from=date_from,
+                                        date_to=date_to,
+                                        shops=shops,
+                                        categories=categories)
+        report_records = {
+            'buy': ReportRecord('Покупки'),
+            'sale': ReportRecord('Продажи')
+        }
+        min_date = None
+        max_date = None
+        for row in self.session.execute(query).all():
+            dict_row = dict(row)
+            row_type = dict_row['type'].value
+            row_type_name = dict_row['type'].name.lower()
+            print(row_type)
+            row_date = datetime.date.fromisoformat(dict_row['date']).replace(day=1)
+            row_amount = dict_row['sum']
+            path = [
+                row['shop'],
+                row['category'] or 'Без категории',
+                row['name']
+            ]
+            report_records[row_type_name].add_row(path, row_date, row_amount)
+            max_date = max(max_date or row_date, row_date)
+            min_date = min(min_date or row_date, row_date)
+
+        report_records['time_points'] = make_date_range(min_date, max_date)
+        report_records['buy'].make_amounts_per_date(report_records['time_points'])
+        return report_records
