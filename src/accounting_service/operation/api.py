@@ -4,9 +4,12 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends
 
+from accounting_service.account.schemas import Account
 from accounting_service.operation.schemas import BaseOperation, Operation
 from accounting_service.operation.service import OperationService
 from exceptions import ForeignKeyConstraintFailed
+from accounting_service.auth import get_current_account
+
 
 router = APIRouter(prefix='/operations', tags=['operation'])
 
@@ -15,9 +18,10 @@ router = APIRouter(prefix='/operations', tags=['operation'])
              response_model=Operation,
              status_code=status.HTTP_201_CREATED)
 def create_operation(operation_create: BaseOperation,
-                     service: OperationService = Depends()):
+                     service: OperationService = Depends(),
+                     current_account: Account = Depends(get_current_account)):
     try:
-        operation = service.create_operation(operation_create)
+        operation = service.create_operation(operation_create, current_account.id)
         return operation
     except ForeignKeyConstraintFailed:
         raise HTTPException(status.HTTP_409_CONFLICT)
@@ -30,8 +34,9 @@ def get_operations(
         date_to: Optional[datetime.date] = None,
         shops: Optional[list[int]] = Query(None),
         categories: Optional[list[int]] = Query(None),
-        service: OperationService = Depends()):
-    operations = service.get_operations(date_from, date_to, shops, categories)
+        service: OperationService = Depends(),
+        current_account: Account = Depends(get_current_account)):
+    operations = service.get_operations(current_account.id, date_from, date_to, shops, categories)
     return operations
 
 
@@ -40,6 +45,7 @@ def get_report(date_from: Optional[datetime.date] = None,
                date_to: Optional[datetime.date] = None,
                shops: Optional[list[int]] = Query(None),
                categories: Optional[list[int]] = Query(None),
-               service: OperationService = Depends()):
-    service.get_report(date_from, date_to, shops, categories)
+               service: OperationService = Depends(),
+               current_account: Account = Depends(get_current_account)):
+    service.get_report(current_account.id, date_from, date_to, shops, categories)
     return {}

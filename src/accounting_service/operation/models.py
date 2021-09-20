@@ -36,6 +36,7 @@ class Operation(Base):
                  name: str,
                  price: float,
                  amount: float,
+                 account_id: int,
                  category_id: Optional[int] = None):
         self.type = type
         self.date = date
@@ -44,6 +45,7 @@ class Operation(Base):
         self.price = price
         self.amount = amount
         self.category_id = category_id
+        self.account_id = account_id
 
     def __repr__(self):
         return f'<Operation {self.id}>'

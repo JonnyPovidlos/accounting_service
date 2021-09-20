@@ -11,7 +11,13 @@ class CreateAccount(BaseAccount):
 
 
 class Account(BaseAccount):
-    id: str
+    id: int
 
     class Config:
         orm_mode = True
+
+
+class LoginAccount(BaseModel):
+    username: str
+    password: str
+

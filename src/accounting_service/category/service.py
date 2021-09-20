@@ -13,27 +13,28 @@ class CategoryService:
     def __init__(self, session: Session = Depends(get_session)):
         self.session = session
 
-    def create_category(self, category_create: BaseCategory) -> CategoryORM:
-        category = CategoryORM(**category_create.dict(exclude_unset=True))
+    def create_category(self, category_create: BaseCategory, account_id: int) -> CategoryORM:
+        category = CategoryORM(**category_create.dict(exclude_unset=True), account_id=account_id)
         self.session.add(category)
         self.session.commit()
         return category
 
-    def _get(self, category_id: int) -> CategoryORM:
+    def _get(self, category_id: int, account_id: int) -> CategoryORM:
         try:
-            category = self.session.query(CategoryORM).where(CategoryORM.id == category_id).one()
+            category = self.session.query(CategoryORM).where(CategoryORM.id == category_id
+                                                             and CategoryORM.account_id == account_id).one()
             return category
         except NoResultFound:
             raise NoResultFoundCustom
 
-    def update_category(self, category_id: int, category_update: BaseCategory) -> CategoryORM:
-        category = self._get(category_id)
+    def update_category(self, category_id: int, category_update: BaseCategory, account_id: int) -> CategoryORM:
+        category = self._get(category_id, account_id)
         update_attrs(category, category_update)
         self.session.commit()
         return category
 
-    def delete_category(self, category_id):
-        category = self._get(category_id)
+    def delete_category(self, category_id, account_id: int):
+        category = self._get(category_id, account_id)
         self.session.delete(category)
         self.session.commit()
 

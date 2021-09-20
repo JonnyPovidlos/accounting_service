@@ -13,27 +13,28 @@ class ShopService:
     def __init__(self, session: Session = Depends(get_session)):
         self.session = session
 
-    def create_shop(self, shop_create: BaseShop) -> ShopORM:
-        shop = ShopORM(**shop_create.dict(exclude_unset=True))
+    def create_shop(self, shop_create: BaseShop, account_id) -> ShopORM:
+        shop = ShopORM(**shop_create.dict(exclude_unset=True), account_id=account_id)
         self.session.add(shop)
         self.session.commit()
         return shop
 
-    def _get(self, shop_id: int) -> ShopORM:
+    def _get(self, shop_id: int, account_id) -> ShopORM:
         try:
-            shop = self.session.query(ShopORM).filter(ShopORM.id == shop_id).one()
+            shop = self.session.query(ShopORM).filter(ShopORM.id == shop_id
+                                                      and ShopORM.account_id == account_id).one()
             return shop
         except NoResultFound:
             raise NoResultFoundCustom
 
-    def update_shop(self, shop_id: int, shop_update: BaseShop) -> ShopORM:
-        shop = self._get(shop_id)
+    def update_shop(self, shop_id: int, shop_update: BaseShop, account_id) -> ShopORM:
+        shop = self._get(shop_id, account_id)
         update_attrs(shop, shop_update)
         self.session.commit()
         return shop
 
-    def delete_shop(self, shop_id):
-        shop = self._get(shop_id)
+    def delete_shop(self, shop_id, account_id):
+        shop = self._get(shop_id, account_id)
         self.session.delete(shop)
         self.session.commit()
 

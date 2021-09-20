@@ -19,8 +19,8 @@ class OperationService:
     def __init__(self, session: Session = Depends(get_session)):
         self.session = session
 
-    def create_operation(self, operation_create: BaseOperation) -> OperationORM:
-        operation = OperationORM(**operation_create.dict(exclude_unset=True))
+    def create_operation(self, operation_create: BaseOperation, account_id) -> OperationORM:
+        operation = OperationORM(**operation_create.dict(exclude_unset=True), account_id=account_id)
         self.session.add(operation)
         try:
             self.session.commit()
@@ -45,23 +45,27 @@ class OperationService:
         return query
 
     def _get_operations(self,
+                        account_id: int,
                         date_from: datetime.date = None,
                         date_to: datetime.date = None,
                         shops: list[int] = None,
-                        categories: list[int] = None) -> list[OperationORM]:
-        query = self.session.query(OperationORM)
+                        categories: list[int] = None,
+                        ) -> list[OperationORM]:
+        query = self.session.query(OperationORM).where(OperationORM.account_id == account_id)
         query = self._make_limitations(query, date_from, date_to, shops, categories)
 
         return query.all()
 
     def get_operations(self,
+                       account_id: int,
                        date_from: datetime.date = None,
                        date_to: datetime.date = None,
                        shops: list[int] = None,
                        categories: list[int] = None) -> list[OperationORM]:
-        return self._get_operations(date_from, date_to, shops, categories)
+        return self._get_operations(account_id, date_from, date_to, shops, categories)
 
     def get_report(self,
+                   account_id: int,
                    date_from: datetime.date = None,
                    date_to: datetime.date = None,
                    shops: list[int] = None,
@@ -77,7 +81,8 @@ class OperationService:
             Shop, OperationORM.shop_id == Shop.id
         ).outerjoin(
             Category, OperationORM.category_id == Category.id
-        )
+        ).where(OperationORM.account_id == account_id)
+
         query = self._make_limitations(query, date_from, date_to, shops, categories)
         query = query.group_by(
             func.date(OperationORM.date, 'start of month'),
