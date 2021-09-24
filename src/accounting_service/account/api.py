@@ -13,7 +13,7 @@ router = APIRouter(prefix='/accounts', tags=['account'])
 
 
 @router.post('/sign-up',
-             response_model=Account,
+             response_model=Token,
              status_code=status.HTTP_201_CREATED)
 def create_account(
         account_create: CreateAccount,
@@ -21,7 +21,10 @@ def create_account(
 ):
     try:
         account = service.create_account(account_create)
-        return account
+        return Token(
+            access_token=create_token(account),
+            token_type='bearer'
+        )
     except IdentityError:
         raise HTTPException(status.HTTP_409_CONFLICT)
 

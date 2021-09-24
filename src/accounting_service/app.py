@@ -9,7 +9,3 @@ category.initialize_app(app)
 operation.initialize_app(app)
 account.initialize_app(app)
 
-
-@app.get('/')
-def root():
-    return {"Hello": "World!"}

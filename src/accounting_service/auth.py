@@ -41,9 +41,10 @@ def get_current_account(
     from accounting_service.account.schemas import Account
     credential_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
+        detail='Error',
         headers={'WWW-Authenticate': 'Bearer'}
     )
     token_data = jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
-    if not 'account' in token_data:
+    if 'account' not in token_data:
         raise credential_exception
     return Account(**token_data['account'])

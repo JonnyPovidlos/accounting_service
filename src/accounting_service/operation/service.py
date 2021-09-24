@@ -1,7 +1,7 @@
 import datetime
 
 from fastapi import Depends
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy import select, func
 from sqlalchemy.orm import Query
 
@@ -11,7 +11,7 @@ from accounting_service.operation.models import Operation as OperationORM
 from accounting_service.operation.schemas import BaseOperation
 from accounting_service.report_utils import ReportRecord, make_date_range
 from accounting_service.shop.models import Shop
-from exceptions import ForeignKeyConstraintFailed
+from exceptions import ForeignKeyConstraintFailed, NoResultFoundCustom
 
 
 class OperationService:
@@ -21,6 +21,8 @@ class OperationService:
         self.session = session
 
     def create_operation(self, operation_create: BaseOperation, account_id) -> OperationORM:
+        self._check_shop_and_category_access(account_id, operation_create.shop_id, operation_create.category_id)
+
         operation = OperationORM(**operation_create.dict(exclude_unset=True), account_id=account_id)
         self.session.add(operation)
         try:
@@ -28,6 +30,16 @@ class OperationService:
             return operation
         except IntegrityError:
             raise ForeignKeyConstraintFailed
+
+    def _check_shop_and_category_access(self, account_id, shop_id, category_id):
+        for cls, id_ in zip([Shop, Category], [shop_id, category_id]):
+            if id_ is not None:
+                try:
+                    obj = self.session.query(cls).where(cls.id == id_).one()
+                except NoResultFound:
+                    raise NoResultFoundCustom
+                if obj.account_id != account_id:
+                    raise NoResultFoundCustom
 
     @staticmethod
     def _make_limitations(query: Query,
@@ -72,7 +84,7 @@ class OperationService:
             Shop.name.label('shop'),
             Category.name.label('category'),
             OperationORM.name,
-            func.sum(OperationORM.amount)
+            func.sum(OperationORM.amount * OperationORM.price)
         ).join(
             Shop, OperationORM.shop_id == Shop.id
         ).outerjoin(
@@ -107,10 +119,8 @@ class OperationService:
         max_date = None
         for row in self.session.execute(query).all():
             dict_row = dict(row)
-            row_type = dict_row['type'].value
             row_type_name = dict_row['type'].name.lower()
-            print(row_type)
-            row_date = datetime.date.fromisoformat(dict_row['date']).replace(day=1)
+            row_date = datetime.date.fromisoformat(dict_row['date'])
             row_amount = dict_row['sum']
             path = [
                 row['shop'],

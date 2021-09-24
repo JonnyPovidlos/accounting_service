@@ -1,4 +1,7 @@
 from datetime import date
+from typing import Optional
+
+from fastapi import Query
 
 
 class ReportRecord:
@@ -45,3 +48,15 @@ def make_date_range(min_date, max_date):
         next_month = current.month + 1
         current = date(current.year + next_month // 12, (next_month - 1) % 12 + 1, 1)
     return result
+
+
+def parse_list_shops(args: str = Query(None, alias='shops')) -> Optional[list[int]]:
+    if args is None:
+        return
+    return [int(arg) for arg in args.split(',')]
+
+
+def parse_list_categories(args: str = Query(None, alias='categories')) -> Optional[list[int]]:
+    if args is None:
+        return
+    return [int(arg) for arg in args.split(',')]
